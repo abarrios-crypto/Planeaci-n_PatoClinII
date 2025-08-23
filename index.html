@@ -9,10 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
     <!-- Application Structure Plan: A tabbed SPA interface with four main sections: 'Información General', 'Competencias', 'Planeación Semestral', and 'Materiales'. The core is an interactive accordion/card list for the 7 learning units, allowing users to expand/collapse details. This structure prioritizes a quick overview of the course before diving into the detailed plan, improving navigability and reducing cognitive load. A donut chart visualizes the course hour distribution for a quick overview. The new 'Materiales' section provides a dedicated space for supplementary resources like presentations and videos. -->
-    <!-- Visualization & Content Choices: 1. Course Hours -> Goal: Inform -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Clearly shows part-to-whole relationship of time commitment -> Library: Chart.js (Canvas). 2. Learning Units -> Goal: Organize -> Presentation: Interactive Accordion List -> Interaction: Click to expand/collapse -> Justification: Manages information density and allows user-focused exploration -> Library/Method: Vanilla JS + Tailwind CSS. 3. New Materials section -> Goal: Organize supplementary content -> Presentation: Simple div structure -> Justification: Provides a clear, dedicated space for links and embedded content. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- Responsive Design Enhancements: All layouts are built using Tailwind's mobile-first approach. This means styles are defined for small screens by default and then overridden with prefixes (e.g., md:, lg:) for larger breakpoints. We use responsive classes like `text-sm md:text-base`, `space-x-2 md:space-x-4`, and `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2` to ensure the layout, typography, and spacing adapt gracefully to any device. The chart and iframes use fluid container principles to maintain their aspect ratio on all screen sizes. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -80,7 +78,7 @@
         </header>
 
         <nav class="bg-white shadow-sm sticky top-0 z-10">
-            <div class="container mx-auto px-4 flex justify-center space-x-2 md:space-x-4 py-3">
+            <div class="container mx-auto px-2 md:px-4 flex flex-wrap justify-center gap-2 md:gap-4 py-3">
                 <button data-target="info" class="nav-button active text-sm md:text-base px-4 py-2 rounded-full">Información General</button>
                 <button data-target="competencias" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Competencias</button>
                 <button data-target="plan" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Planeación Semestral</button>
@@ -93,12 +91,12 @@
             <section id="info" class="content-section">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Información General del Curso</h2>
-                    <p class="text-slate-600">Aquí encontrarás los datos clave de la materia, incluyendo el total de horas, el ciclo escolar y los horarios para cada grupo. El gráfico de la derecha ofrece una visualización clara de la distribución del tiempo entre actividades teóricas, prácticas y de estudio independiente, ayudándote a planificar tu dedicación al curso.</p>
+                    <p class="text-slate-600 text-sm md:text-base">Aquí encontrarás los datos clave de la materia, incluyendo el total de horas, el ciclo escolar y los horarios para cada grupo. El gráfico de la derecha ofrece una visualización clara de la distribución del tiempo entre actividades teóricas, prácticas y de estudio independiente, ayudándote a planificar tu dedicación al curso.</p>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="font-bold text-lg mb-4 border-b pb-2 text-teal-800">Detalles de la Materia</h3>
-                        <div class="space-y-3 text-slate-700">
+                        <div class="space-y-3 text-sm md:text-base text-slate-700">
                             <p><strong>Unidad Académica:</strong> Facultad de Biología</p>
                             <p><strong>Programa Educativo:</strong> Licenciatura en Biomedicina</p>
                             <p><strong>Docente:</strong> M.C. Adriana Alicia Barrios Rodríguez</p>
@@ -121,25 +119,25 @@
             <section id="competencias" class="content-section hidden">
                  <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Competencias a Desarrollar</h2>
-                    <p class="text-slate-600">En esta sección se describe el perfil de egreso que se busca alcanzar con esta unidad de aprendizaje. Se detallan las competencias teóricas, prácticas y actitudinales que adquirirás, las cuales son fundamentales para tu formación como profesional en el campo de la biomedicina y la patología clínica.</p>
+                    <p class="text-slate-600 text-sm md:text-base">En esta sección se describe el perfil de egreso que se busca alcanzar con esta unidad de aprendizaje. Se detallan las competencias teóricas, prácticas y actitudinales que adquirirás, las cuales son fundamentales para tu formación como profesional en el campo de la biomedicina y la patología clínica.</p>
                 </div>
                 <div class="space-y-6">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="font-bold text-lg mb-2 text-teal-800">Perfil de Egreso</h3>
-                        <p class="text-slate-700">El estudiante analiza, evalúa y aplica de manera crítica y multidisciplinaria los fundamentos de la patología clínica para el diagnóstico y pronóstico de diversas enfermedades. A través de la integración de conocimientos de bioquímica, hematología, inmunología y fisiología, el alumno desarrollará habilidades en la interpretación de análisis de laboratorio, incluyendo perfiles metabólicos, pruebas de función renal y hepática, y gases arteriales. Además, perfeccionará habilidades prácticas en la valoración de alteraciones de la sangre y en la medicina transfusional.</p>
+                        <p class="text-sm md:text-base text-slate-700">El estudiante analiza, evalúa y aplica de manera crítica y multidisciplinaria los fundamentos de la patología clínica para el diagnóstico y pronóstico de diversas enfermedades. A través de la integración de conocimientos de bioquímica, hematología, inmunología y fisiología, el alumno desarrollará habilidades en la interpretación de análisis de laboratorio, incluyendo perfiles metabólicos, pruebas de función renal y hepática, y gases arteriales. Además, perfeccionará habilidades prácticas en la valoración de alteraciones de la sangre y en la medicina transfusional.</p>
                     </div>
-                    <div class="grid md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Teóricos</h3>
-                            <p class="text-slate-700">Comprender los fundamentos de la patología clínica, incluyendo etiología, fisiopatología y manifestaciones clínicas.</p>
+                            <p class="text-sm md:text-base text-slate-700">Comprender los fundamentos de la patología clínica, incluyendo etiología, fisiopatología y manifestaciones clínicas.</p>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Prácticos</h3>
-                            <p class="text-slate-700">Identificar y describir los análisis de laboratorio, y analizar la relación entre los resultados y las condiciones clínicas, integrando conocimientos de bioquímica, hematología y otros campos. Evaluar y diagnosticar enfermedades interpretando datos de laboratorio, imágenes clínicas y hallazgos físicos.</p>
+                            <p class="text-sm md:text-base text-slate-700">Identificar y describir los análisis de laboratorio, y analizar la relación entre los resultados y las condiciones clínicas, integrando conocimientos de bioquímica, hematología y otros campos. Evaluar y diagnosticar enfermedades interpretando datos de laboratorio, imágenes clínicas y hallazgos físicos.</p>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Actitudinales</h3>
-                            <p class="text-slate-700">Mantenerse actualizado en los avances científicos y tecnológicos. Integrar principios éticos y de responsabilidad profesional, priorizando la calidad, seguridad y confidencialidad de la información clínica.</p>
+                            <p class="text-sm md:text-base text-slate-700">Mantenerse actualizado en los avances científicos y tecnológicos. Integrar principios éticos y de responsabilidad profesional, priorizando la calidad, seguridad y confidencialidad de la información clínica.</p>
                         </div>
                     </div>
                 </div>
@@ -148,7 +146,7 @@
             <section id="plan" class="content-section hidden">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Planeación Semestral por Unidades</h2>
-                    <p class="text-slate-600">Esta sección detalla el contenido y la estructura de cada unidad de aprendizaje del curso. Haz clic en el título de cualquier unidad para expandir y ver los temas, actividades, recursos y criterios de evaluación correspondientes. Este diseño interactivo te permite enfocarte en la información que necesitas en cada momento.</p>
+                    <p class="text-slate-600 text-sm md:text-base">Esta sección detalla el contenido y la estructura de cada unidad de aprendizaje del curso. Haz clic en el título de cualquier unidad para expandir y ver los temas, actividades, recursos y criterios de evaluación correspondientes. Este diseño interactivo te permite enfocarte en la información que necesitas en cada momento.</p>
                 </div>
                 <div id="units-container" class="space-y-4"></div>
             </section>
@@ -156,7 +154,7 @@
             <section id="materiales" class="content-section hidden">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Materiales Complementarios</h2>
-                    <p class="text-slate-600">Aquí puedes encontrar presentaciones, videos, podcasts y otros recursos útiles para cada unidad. El objetivo es complementar lo visto en clase y ofrecerte diferentes formatos de aprendizaje para que refuerces tus conocimientos.</p>
+                    <p class="text-slate-600 text-sm md:text-base">Aquí puedes encontrar presentaciones, videos, podcasts y otros recursos útiles para cada unidad. El objetivo es complementar lo visto en clase y ofrecerte diferentes formatos de aprendizaje para que refuerces tus conocimientos.</p>
                 </div>
                 <div class="space-y-8">
                     <!-- Sección de Presentaciones -->
@@ -336,8 +334,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const [key, value] of Object.entries(unit.content)) {
             contentHTML += `
                 <div class="border-t border-slate-200 pt-3">
-                    <h4 class="font-semibold text-slate-700">${key}</h4>
-                    <p class="text-slate-600 mt-1">${value}</p>
+                    <h4 class="font-semibold text-sm md:text-base text-slate-700">${key}</h4>
+                    <p class="text-xs md:text-sm text-slate-600 mt-1">${value}</p>
                 </div>
             `;
         }
@@ -345,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         unitElement.innerHTML = `
             <div class="unit-header flex justify-between items-center p-4 cursor-pointer">
-                <h3 class="text-lg font-semibold text-teal-800">${unit.title}</h3>
+                <h3 class="text-base md:text-lg font-semibold text-teal-800">${unit.title}</h3>
                 <span class="unit-arrow text-teal-600 text-2xl">&#x276F;</span>
             </div>
             <div class="unit-content">
@@ -360,8 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const scheduleElement = document.createElement('div');
         scheduleElement.className = 'bg-slate-100 p-3 rounded-md';
         scheduleElement.innerHTML = `
-            <p class="font-semibold text-slate-800">Grupo ${schedule.group}</p>
-            <p class="text-sm text-slate-600">${schedule.times}</p>
+            <p class="font-semibold text-sm md:text-base text-slate-800">Grupo ${schedule.group}</p>
+            <p class="text-xs md:text-sm text-slate-600">${schedule.times}</p>
         `;
         schedulesContainer.appendChild(scheduleElement);
     });
@@ -426,6 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 12
+                        }
+                    }
                 },
                 tooltip: {
                     callbacks: {
