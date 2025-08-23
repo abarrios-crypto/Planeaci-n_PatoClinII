@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planeación Semestral - Patología Clínica II</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: A tabbed SPA interface with three main sections: 'Información General', 'Competencias', and 'Planeación Semestral'. The core is an interactive accordion/card list for the 7 learning units, allowing users to expand/collapse details. This structure prioritizes a quick overview of the course before diving into the detailed plan, improving navigability and reducing cognitive load. A donut chart visualizes the course hour distribution for a quick overview. -->
+    <!-- Visualization & Content Choices: 1. Course Hours -> Goal: Inform -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Clearly shows part-to-whole relationship of time commitment -> Library: Chart.js (Canvas). 2. Learning Units -> Goal: Organize -> Presentation: Interactive Accordion List -> Interaction: Click to expand/collapse -> Justification: Manages information density and allows user-focused exploration -> Library/Method: Vanilla JS + Tailwind CSS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #0f766e; /* teal-700 */
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .unit-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .unit-header.open .unit-arrow {
+            transform: rotate(90deg);
+        }
+        .unit-arrow {
+            transition: transform 0.3s ease;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="min-h-screen">
+        <header class="bg-white shadow-md">
+            <div class="container mx-auto px-4 py-6">
+                <h1 class="text-2xl md:text-3xl font-bold text-teal-800">Planeación Semestral: Patología Clínica II</h1>
+                <p class="mt-1 text-slate-600">Facultad de Biología - Licenciatura en Biomedicina</p>
+            </div>
+        </header>
+
+        <nav class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-4 flex justify-center space-x-2 md:space-x-4 py-3">
+                <button data-target="info" class="nav-button active text-sm md:text-base px-4 py-2 rounded-full">Información General</button>
+                <button data-target="competencias" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Competencias</button>
+                <button data-target="plan" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Planeación Semestral</button>
+            </div>
+        </nav>
+
+        <main class="container mx-auto p-4 md:p-8">
+            
+            <section id="info" class="content-section">
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <h2 class="text-xl font-bold text-teal-700 mb-2">Información General del Curso</h2>
+                    <p class="text-slate-600">Aquí encontrarás los datos clave de la materia, incluyendo el total de horas, el ciclo escolar y los horarios para cada grupo. El gráfico de la derecha ofrece una visualización clara de la distribución del tiempo entre actividades teóricas, prácticas y de estudio independiente, ayudándote a planificar tu dedicación al curso.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 border-b pb-2 text-teal-800">Detalles de la Materia</h3>
+                        <div class="space-y-3 text-slate-700">
+                            <p><strong>Unidad Académica:</strong> Facultad de Biología</p>
+                            <p><strong>Programa Educativo:</strong> Licenciatura en Biomedicina</p>
+                            <p><strong>Docente:</strong> M.C. Adriana Alicia Barrios Rodríguez</p>
+                            <p><strong>Semestre:</strong> Noveno semestre</p>
+                            <p><strong>Ciclo Escolar:</strong> 2025-2026</p>
+                            <p><strong>Total de Horas:</strong> 160</p>
+                        </div>
+                        <h3 class="font-bold text-lg mt-6 mb-4 border-b pb-2 text-teal-800">Horarios</h3>
+                        <div id="schedules-container" class="space-y-4"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col items-center">
+                        <h3 class="font-bold text-lg mb-4 text-center text-teal-800">Distribución de Horas del Curso</h3>
+                        <div class="chart-container">
+                            <canvas id="hoursChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="competencias" class="content-section hidden">
+                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <h2 class="text-xl font-bold text-teal-700 mb-2">Competencias a Desarrollar</h2>
+                    <p class="text-slate-600">En esta sección se describe el perfil de egreso que se busca alcanzar con esta unidad de aprendizaje. Se detallan las competencias teóricas, prácticas y actitudinales que adquirirás, las cuales son fundamentales para tu formación como profesional en el campo de la biomedicina y la patología clínica.</p>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-2 text-teal-800">Perfil de Egreso</h3>
+                        <p class="text-slate-700">El estudiante analiza, evalúa y aplica de manera crítica y multidisciplinaria los fundamentos de la patología clínica para el diagnóstico y pronóstico de diversas enfermedades. A través de la integración de conocimientos de bioquímica, hematología, inmunología y fisiología, el alumno desarrollará habilidades en la interpretación de análisis de laboratorio, incluyendo perfiles metabólicos, pruebas de función renal y hepática, y gases arteriales. Además, perfeccionará habilidades prácticas en la valoración de alteraciones de la sangre y en la medicina transfusional.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Teóricos</h3>
+                            <p class="text-slate-700">Comprender los fundamentos de la patología clínica, incluyendo etiología, fisiopatología y manifestaciones clínicas.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Prácticos</h3>
+                            <p class="text-slate-700">Identificar y describir los análisis de laboratorio, y analizar la relación entre los resultados y las condiciones clínicas, integrando conocimientos de bioquímica, hematología y otros campos. Evaluar y diagnosticar enfermedades interpretando datos de laboratorio, imágenes clínicas y hallazgos físicos.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Actitudinales</h3>
+                            <p class="text-slate-700">Mantenerse actualizado en los avances científicos y tecnológicos. Integrar principios éticos y de responsabilidad profesional, priorizando la calidad, seguridad y confidencialidad de la información clínica.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="plan" class="content-section hidden">
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <h2 class="text-xl font-bold text-teal-700 mb-2">Planeación Semestral por Unidades</h2>
+                    <p class="text-slate-600">Esta sección detalla el contenido y la estructura de cada unidad de aprendizaje del curso. Haz clic en el título de cualquier unidad para expandir y ver los temas, actividades, recursos y criterios de evaluación correspondientes. Este diseño interactivo te permite enfocarte en la información que necesitas en cada momento.</p>
+                </div>
+                <div id="units-container" class="space-y-4"></div>
+            </section>
+
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const unitsData = [
+        {
+            title: "1. Introducción a la Patología Clínica II",
+            content: {
+                "Tema(s) y subtema(s)": "- Alcance de la patología clínica en la biomedicina.<br>- Aplicaciones de la etiología en la investigación.<br>- Patogénesis: fundamentos lesionales y fisiopatológicos.<br>- Conceptos de síntoma, signo, síndrome.<br>- Medicina basada en la evidencia.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos, actividades reflexivas, actividades mediadas por TICs e innovadoras.",
+                "Actividades para el aprendizaje (estudiante)": "Participación en actividades mediadas por el docente, exposición, debate y desarrollo de actividades de estudio independiente.",
+                "Materiales y Recursos": "Pizarrón blanco, plumones, proyector, PC o laptop, conexión a internet, material impreso de lectura, presentaciones digitales y actividades interactivas.",
+                "Evidencias de aprendizaje": "Productos de desempeño, Portafolio de evidencias y registro de actividades.",
+                "Trabajo(s) de estudio independiente": "Lectura y análisis de textos científicos.",
+                "Evaluación": "Se basa en las <strong>Actividades en clase (30%)</strong> y <strong>Prácticas de laboratorio (20%)</strong> para la calificación parcial."
+            }
+        },
+        {
+            title: "2. Estudio Básico de la Sangre",
+            content: {
+                "Tema(s) y subtema(s)": "- Composición de la sangre.<br>- Hematopoyesis y funciones de los diferentes tipos celulares.<br>- Alteraciones hematológicas comunes.<br>- Interpretación de un hemograma.<br>- Pruebas específicas en hematología.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                "Actividades para el aprendizaje (estudiante)": "Participación en clase, desarrollo de actividades de estudio independiente y elaboración de organizadores gráficos.",
+                "Materiales y Recursos": "Prácticas de laboratorio, material didáctico impreso y actividades interactivas.",
+                "Evidencias de aprendizaje": "Portafolio de evidencias y evidencia de participación en plataformas y aplicaciones.",
+                "Trabajo(s) de estudio independiente": "Elaboración de mapas conceptuales y diagramas de flujo.",
+                "Evaluación": "La calificación parcial se divide en <strong>Actividades (30%)</strong> y <strong>Prácticas de laboratorio (20%)</strong>."
+            }
+        },
+        {
+            title: "3. Banco de Sangre y Medicina Transfusional",
+            content: {
+                "Tema(s) y subtema(s)": "- Principios de la donación de sangre.<br>- Tipos de transfusiones y sus indicaciones.<br>- Reacciones transfusionales.<br>- Conservación y manejo de hemoderivados.<br>- Tendencias en investigación en Medicina Transfusional.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos y juego de roles.",
+                "Actividades para el aprendizaje (estudiante)": "Participación, exposición y elaboración de materiales creativos.",
+                "Materiales y Recursos": "Pizarrón, proyector, PC/laptop y material impreso.",
+                "Evidencias de aprendizaje": "Portafolio de evidencias y productos de desempeño.",
+                "Trabajo(s) de estudio independiente": "Investigación sobre tendencias en medicina transfusional.",
+                "Evaluación": "La calificación final se basa en una <strong>Actividad integradora teórico-práctica (50%)</strong>, <strong>Examen práctico (25%)</strong> y <strong>Proyecto final (25%)</strong>."
+            }
+        },
+        {
+            title: "4. Valoración Metabólica Básica",
+            content: {
+                "Tema(s) y subtema(s)": "- Metabolismo de carbohidratos, lípidos y proteínas.<br>- Marcadores bioquímicos.<br>- Interpretación de perfiles metabólicos.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales y análisis de casos clínicos.",
+                "Actividades para el aprendizaje (estudiante)": "Exposición y debate.",
+                "Materiales y Recursos": "Pizarrón, proyector, PC/laptop y material impreso de lectura.",
+                "Evidencias de aprendizaje": "Productos de desempeño y registro de actividades.",
+                "Trabajo(s) de estudio independiente": "Interpretación de casos clínicos y perfiles metabólicos.",
+                "Evaluación": "Se evaluará la <strong>aplicación de los contenidos</strong> y el **cuidado de la ortografía**."
+            }
+        },
+        {
+            title: "5. Valoración Renal Básica",
+            content: {
+                "Tema(s) y subtema(s)": "- Fisiología renal básica.<br>- Alteraciones renales y marcadores de función renal.<br>- Enfermedades renales más frecuentes.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales y actividades innovadoras.",
+                "Actividades para el aprendizaje (estudiante)": "Participación en clase.",
+                "Materiales y Recursos": "Pizarrón, proyector, PC/laptop, conexión a internet y material impreso.",
+                "Evidencias de aprendizaje": "Portafolio de evidencias y evidencia de participación en plataformas.",
+                "Trabajo(s) de estudio independiente": "Investigación sobre enfermedades renales.",
+                "Evaluación": "La calificación final incluye una <strong>Actividad integradora teórico-práctica (50%)</strong>, <strong>Examen práctico (25%)</strong> y un <strong>Proyecto final (25%)</strong>."
+            }
+        },
+        {
+            title: "6. Valoración Hepática Básica",
+            content: {
+                "Tema(s) y subtema(s)": "- Fisiología hepática básica.<br>- Pruebas hepáticas y su interpretación.<br>- Hepatopatías más comunes.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales y análisis de casos clínicos.",
+                "Actividades para el aprendizaje (estudiante)": "Exposición y desarrollo de actividades de estudio independiente.",
+                "Materiales y Recursos": "Material impreso de lectura y presentaciones digitales.",
+                "Evidencias de aprendizaje": "Registro de actividades en clase y de estudio independiente.",
+                "Trabajo(s) de estudio independiente": "Creación de productos de desempeño de manera coherente y clara.",
+                "Evaluación": "Se evaluará la <strong>capacidad de observar, investigar, argumentar y redactar</strong>."
+            }
+        },
+        {
+            title: "7. Evaluación del Equilibrio Ácido-Base",
+            content: {
+                "Tema(s) y subtema(s)": "- Fisiología ácido-base.<br>- Acidosis y alcalosis.<br>- Interpretación de gases arteriales.",
+                "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos y actividades mediadas por TICs.",
+                "Actividades para el aprendizaje (estudiante)": "Debate y elaboración de materiales creativos.",
+                "Materiales y Recursos": "Pizarrón, proyector, PC/laptop, conexión a internet y actividades interactivas.",
+                "Evidencias de aprendizaje": "Evidencia de participación en aplicaciones y productos de desempeño.",
+                "Trabajo(s) de estudio independiente": "Investigación y análisis de casos de acidosis y alcalosis.",
+                "Evaluación": "La calificación final se basa en las <strong>Evaluaciones parciales (30%)</strong> y las <strong>Actividades de estudio independiente (20%)</strong>."
+            }
+        }
+    ];
+
+    const schedulesData = [
+        { group: "5-1", times: "<strong>Lun:</strong> 08:00-9:20 | <strong>Mar:</strong> 08:00-09:20 | <strong>Jue:</strong> 09:20-10:00 | <strong>Vie:</strong> 08:00-9:20" },
+        { group: "5-2", times: "<strong>Lun:</strong> 10:40-12:00 | <strong>Mar:</strong> 10:40-12:00 | <strong>Mié:</strong> 08:00-9:20 | <strong>Jue:</strong> 10:00-10:40" },
+        { group: "5-3", times: "<strong>Lun:</strong> 14:20-15:40 | <strong>Mar:</strong> 15:40-16:20 | <strong>Mié:</strong> 14:20-15:40 | <strong>Jue:</strong> 14:20-15:40" },
+    ];
+
+    const unitsContainer = document.getElementById('units-container');
+    unitsData.forEach(unit => {
+        const unitElement = document.createElement('div');
+        unitElement.className = 'bg-white rounded-lg shadow-sm border border-slate-200';
+        
+        let contentHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 p-6">';
+        for (const [key, value] of Object.entries(unit.content)) {
+            contentHTML += `
+                <div class="border-t border-slate-200 pt-3">
+                    <h4 class="font-semibold text-slate-700">${key}</h4>
+                    <p class="text-slate-600 mt-1">${value}</p>
+                </div>
+            `;
+        }
+        contentHTML += '</div>';
+
+        unitElement.innerHTML = `
+            <div class="unit-header flex justify-between items-center p-4 cursor-pointer">
+                <h3 class="text-lg font-semibold text-teal-800">${unit.title}</h3>
+                <span class="unit-arrow text-teal-600 text-2xl">&#x276F;</span>
+            </div>
+            <div class="unit-content">
+                ${contentHTML}
+            </div>
+        `;
+        unitsContainer.appendChild(unitElement);
+    });
+
+    const schedulesContainer = document.getElementById('schedules-container');
+    schedulesData.forEach(schedule => {
+        const scheduleElement = document.createElement('div');
+        scheduleElement.className = 'bg-slate-100 p-3 rounded-md';
+        scheduleElement.innerHTML = `
+            <p class="font-semibold text-slate-800">Grupo ${schedule.group}</p>
+            <p class="text-sm text-slate-600">${schedule.times}</p>
+        `;
+        schedulesContainer.appendChild(scheduleElement);
+    });
+
+    unitsContainer.addEventListener('click', (event) => {
+        const header = event.target.closest('.unit-header');
+        if (header) {
+            header.classList.toggle('open');
+            const content = header.nextElementSibling;
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+            }
+        }
+    });
+
+    const navButtons = document.querySelectorAll('.nav-button');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            const targetId = button.getAttribute('data-target');
+            
+            contentSections.forEach(section => {
+                if (section.id === targetId) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    const ctx = document.getElementById('hoursChart').getContext('2d');
+    const hoursChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Teóricas', 'Prácticas', 'Estudio Independiente'],
+            datasets: [{
+                label: 'Distribución de Horas',
+                data: [96, 32, 32],
+                backgroundColor: [
+                    'rgba(15, 118, 110, 0.8)', // teal-700
+                    'rgba(13, 148, 136, 0.8)', // teal-600
+                    'rgba(45, 212, 191, 0.8)'  // teal-400
+                ],
+                borderColor: [
+                    '#f8fafc',
+                    '#f8fafc',
+                    '#f8fafc'
+                ],
+                borderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed + ' horas';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
