@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
-    <!-- Application Structure Plan: A tabbed SPA interface with three main sections: 'Información General', 'Competencias', and 'Planeación Semestral'. The core is an interactive accordion/card list for the 7 learning units, allowing users to expand/collapse details. This structure prioritizes a quick overview of the course before diving into the detailed plan, improving navigability and reducing cognitive load. A donut chart visualizes the course hour distribution for a quick overview. -->
-    <!-- Visualization & Content Choices: 1. Course Hours -> Goal: Inform -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Clearly shows part-to-whole relationship of time commitment -> Library: Chart.js (Canvas). 2. Learning Units -> Goal: Organize -> Presentation: Interactive Accordion List -> Interaction: Click to expand/collapse -> Justification: Manages information density and allows user-focused exploration -> Library/Method: Vanilla JS + Tailwind CSS. -->
+    <!-- Application Structure Plan: A tabbed SPA interface with four main sections: 'Información General', 'Competencias', 'Planeación Semestral', and 'Materiales'. The core is an interactive accordion/card list for the 7 learning units, allowing users to expand/collapse details. This structure prioritizes a quick overview of the course before diving into the detailed plan, improving navigability and reducing cognitive load. A donut chart visualizes the course hour distribution for a quick overview. The new 'Materiales' section provides a dedicated space for supplementary resources like presentations and videos. -->
+    <!-- Visualization & Content Choices: 1. Course Hours -> Goal: Inform -> Viz: Donut Chart -> Interaction: Hover for details -> Justification: Clearly shows part-to-whole relationship of time commitment -> Library: Chart.js (Canvas). 2. Learning Units -> Goal: Organize -> Presentation: Interactive Accordion List -> Interaction: Click to expand/collapse -> Justification: Manages information density and allows user-focused exploration -> Library/Method: Vanilla JS + Tailwind CSS. 3. New Materials section -> Goal: Organize supplementary content -> Presentation: Simple div structure -> Justification: Provides a clear, dedicated space for links and embedded content. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -51,6 +51,22 @@
                 height: 350px;
             }
         }
+        .iframe-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -68,6 +84,7 @@
                 <button data-target="info" class="nav-button active text-sm md:text-base px-4 py-2 rounded-full">Información General</button>
                 <button data-target="competencias" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Competencias</button>
                 <button data-target="plan" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Planeación Semestral</button>
+                <button data-target="materiales" class="nav-button text-sm md:text-base px-4 py-2 rounded-full">Materiales</button>
             </div>
         </nav>
 
@@ -135,7 +152,82 @@
                 </div>
                 <div id="units-container" class="space-y-4"></div>
             </section>
+            
+            <section id="materiales" class="content-section hidden">
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
+                    <h2 class="text-xl font-bold text-teal-700 mb-2">Materiales Complementarios</h2>
+                    <p class="text-slate-600">Aquí puedes encontrar presentaciones, videos, podcasts y otros recursos útiles para cada unidad. El objetivo es complementar lo visto en clase y ofrecerte diferentes formatos de aprendizaje para que refuerces tus conocimientos.</p>
+                </div>
+                <div class="space-y-8">
+                    <!-- Sección de Presentaciones -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-teal-800">Presentaciones (Gamma.app)</h3>
+                        <div class="space-y-6">
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Unidad 1 Tema 1: Alcance de la patología clínica en la biomedicina</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://gamma.app/docs/U1-T1-Alcance-de-la-patologia-clinica-en-la-biomedicina-jlmlvluawjk2ndw" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Unidad 1 Tema 2: Patogénesis</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://gamma.app/docs/w6eaq633amqd3et" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Unidad 1 Tema 3: Conceptos de lesión</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://gamma.app/docs/54743qhcfd0m5oa" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Unidad 1 Tema 4: Conceptos de síntoma, signo y síndrome</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://gamma.app/docs/Conceptos-de-sintoma-signo-sindrome-y-otros-terminos-generales-de-yebx124tiqo6e2n" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                             <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Unidad 1 Tema 5: Introducción</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://gamma.app/docs/Introduccion--6p1vbscosa4iiiy" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- Sección de Actividades y Recursos Interactivos -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-teal-800">Actividades y Recursos Interactivos</h3>
+                        <div class="space-y-6">
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Mapa Interactivo del Programa</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://abarrios-crypto.github.io/MapaPatoClinII/" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Actividad de Encuadre</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://app.briskteaching.com/ws/BU9UBI" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Actividad Unidad 1 Tema 1</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://app.briskteaching.com/ws/95H4KB" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                             <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-slate-800 mb-2">Actividad Unidad 1 Tema 4</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://app.briskteaching.com/ws/39GX8G" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
