@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planeación Semestral - Patología Clínica II</title>
+    <!-- Incluye Tailwind CSS para un estilizado rápido y adaptable -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Incluye Chart.js para el gráfico de distribución de horas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Utiliza la fuente Inter para un estilo limpio y moderno -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Application Structure Plan: A tabbed SPA interface with four main sections: 'Información General', 'Competencias', 'Planeación Semestral', and 'Materiales'. The core is an interactive accordion/card list for the 7 learning units, allowing users to expand/collapse details. This structure prioritizes a quick overview of the course before diving into the detailed plan, improving navigability and reducing cognitive load. A donut chart visualizes the course hour distribution for a quick overview. The new 'Materiales' section provides a dedicated space for supplementary resources like presentations and videos. -->
-    <!-- Responsive Design Enhancements: All layouts are built using Tailwind's mobile-first approach. This means styles are defined for small screens by default and then overridden with prefixes (e.g., md:, lg:) for larger breakpoints. We use responsive classes like `text-sm md:text-base`, `space-x-2 md:space-x-4`, and `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2` to ensure the layout, typography, and spacing adapt gracefully to any device. The chart and iframes use fluid container principles to maintain their aspect ratio on all screen sizes. The new addition of buttons below each iframe allows for a better mobile experience, as they open a fullscreen view in a new tab, providing more room for interaction. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -56,7 +57,6 @@
             overflow: hidden;
             border-radius: 0.5rem;
         }
-
         .iframe-container iframe {
             position: absolute;
             top: 0;
@@ -65,6 +65,77 @@
             height: 100%;
             border: 0;
         }
+        /* Estilos específicos para el calendario generado */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+            text-align: center;
+        }
+        .calendar-day {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            position: relative;
+            cursor: default;
+        }
+        .day-name {
+            font-weight: 600;
+            color: #115e59; /* teal-800 */
+        }
+        .day-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(50%, -50%);
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background-color: #dc2626; /* red-600 */
+            color: white;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .highlight-start {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+            font-weight: 700;
+        }
+        .highlight-end {
+            background-color: #be123c; /* rose-700 */
+            color: white;
+            font-weight: 700;
+        }
+        .highlight-vacation {
+            background-color: #d1d5db; /* gray-300 */
+            color: #4b5563; /* gray-600 */
+        }
+        .highlight-holiday {
+            background-color: #fca5a5; /* red-300 */
+            color: #7f1d1d; /* red-900 */
+        }
+        /* Nuevo estilo para los días de exámenes */
+        .highlight-exam {
+            background-color: #f97316; /* orange-500 */
+            color: white;
+            font-weight: 700;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .dot.inicio { background-color: #0d9488; }
+        .dot.fin { background-color: #be123c; }
+        .dot.vacaciones { background-color: #d1d5db; }
+        .dot.oficial { background-color: #fca5a5; }
+        .dot.suspension { background-color: #fdbb74; }
+        .dot.examenes { background-color: #f97316; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -91,7 +162,7 @@
             <section id="info" class="content-section">
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Información General del Curso</h2>
-                    <p class="text-slate-600 text-sm md:text-base">Aquí encontrarás los datos clave de la materia, incluyendo el total de horas, el ciclo escolar y los horarios para cada grupo. El gráfico de la derecha ofrece una visualización clara de la distribución del tiempo entre actividades teóricas, prácticas y de estudio independiente, ayudándote a planificar tu dedicación al curso.</p>
+                    <p class="text-slate-600 text-sm md:text-base">Aquí encontrarás los datos clave de la materia, incluyendo el total de horas, el ciclo escolar y los horarios para cada grupo. El gráfico de la derecha ofrece una visualización clara de la distribución del tiempo entre las diversas actividades de evaluación, ayudándote a planificar tu dedicación al curso.</p>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -108,9 +179,62 @@
                         <div id="schedules-container" class="space-y-4"></div>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col items-center">
-                        <h3 class="font-bold text-lg mb-4 text-center text-teal-800">Distribución de Horas del Curso</h3>
+                        <h3 class="font-bold text-lg mb-4 text-center text-teal-800">Criterios de Evaluación</h3>
                         <div class="chart-container">
                             <canvas id="hoursChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sección para el calendario oficial, ahora generado dinámicamente -->
+                <div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+                    <h3 class="font-bold text-lg mb-4 border-b pb-2 text-teal-800">Calendario Oficial 2025-2026</h3>
+                    <p class="text-sm md:text-base text-slate-600 mb-4">A continuación se muestra el calendario académico oficial de la Universidad Autónoma de Sinaloa para el ciclo 2025-2026 con las fechas clave resaltadas.</p>
+                    <div id="calendar-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- El calendario se insertará aquí con JavaScript -->
+                    </div>
+                    <div class="mt-8 text-sm md:text-base">
+                        <h4 class="font-bold text-teal-800 mb-2">Convenciones de colores:</h4>
+                        <div class="flex flex-wrap gap-4 items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-full bg-teal-600"></span>
+                                <span class="text-slate-600">Inicio de semestre</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-full bg-rose-700"></span>
+                                <span class="text-slate-600">Fin de semestre</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-full bg-gray-300"></span>
+                                <span class="text-slate-600">Vacaciones</span>
+                            </div>
+                            <!-- Nueva convención para exámenes -->
+                            <div class="flex items-center gap-2">
+                                <span class="w-4 h-4 rounded-full bg-orange-500"></span>
+                                <span class="text-slate-600">Exámenes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección con el listado completo de fechas -->
+                <div class="bg-white p-6 rounded-lg shadow-sm mt-8">
+                    <h3 class="font-bold text-lg mb-4 border-b pb-2 text-teal-800">Detalles del Calendario Académico</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm md:text-base text-slate-700">
+                        <div>
+                            <p class="font-semibold text-teal-800 flex items-center mb-1"><span class="dot inicio"></span> Inicio de clases:</p>
+                            <p class="pl-4">25 de agosto de 2025</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-teal-800 flex items-center mb-1"><span class="dot fin"></span> Fin de clases:</p>
+                            <p class="pl-4">16 de enero de 2026</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-teal-800 flex items-center mb-1"><span class="dot examenes"></span> Exámenes:</p>
+                            <p class="pl-4">Del 5 al 16 de enero de 2026</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-teal-800 flex items-center mb-1"><span class="dot vacaciones"></span> Vacaciones de invierno:</p>
+                            <p class="pl-4">Del 22 de diciembre de 2025 al 9 de enero de 2026</p>
                         </div>
                     </div>
                 </div>
@@ -129,15 +253,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Teóricos</h3>
-                            <p class="text-sm md:text-base text-slate-700">Comprender los fundamentos de la patología clínica, incluyendo etiología, fisiopatología y manifestaciones clínicas.</p>
+                            <p class="text-sm md:text-base text-slate-700">Comprender los fundamentos de la patología clínica, incluyendo la etiología, fisiopatología y manifestaciones clínicas de diversas enfermedades. Identificar y describir los diferentes tipos de análisis de laboratorio utilizados en el diagnóstico y seguimiento de enfermedades. Analizar la relación entre los resultados de laboratorio y las condiciones clínicas, integrando conocimientos de bioquímica, hematología, y otros campos afines.</p>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Prácticos</h3>
-                            <p class="text-sm md:text-base text-slate-700">Identificar y describir los análisis de laboratorio, y analizar la relación entre los resultados y las condiciones clínicas, integrando conocimientos de bioquímica, hematología y otros campos. Evaluar y diagnosticar enfermedades interpretando datos de laboratorio, imágenes clínicas y hallazgos físicos.</p>
+                            <p class="text-sm md:text-base text-slate-700">Evaluar y diagnosticar enfermedades mediante la interpretación de datos de laboratorio, imágenes clínicas y hallazgos físicos. Aplicar técnicas avanzadas de análisis para resolver problemas complejos relacionados con la patología clínica. Diferenciar entre procesos patológicos mediante la integración de múltiples fuentes de información, incluyendo estudios de casos prácticos.</p>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="font-bold text-lg mb-2 text-teal-800">Saberes Actitudinales</h3>
-                            <p class="text-sm md:text-base text-slate-700">Mantenerse actualizado en los avances científicos y tecnológicos. Integrar principios éticos y de responsabilidad profesional, priorizando la calidad, seguridad y confidencialidad de la información clínica.</p>
+                            <p class="text-sm md:text-base text-slate-700">Mantenerse actualizado en los avances científicos y tecnológicos relevantes para la patología clínica, participando en actividades de educación continua. Integrar principios éticos y de responsabilidad profesional en la práctica diaria, priorizando la calidad, seguridad y confidencialidad en el manejo de información clínica.</p>
                         </div>
                     </div>
                 </div>
@@ -155,8 +279,37 @@
                 <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
                     <h2 class="text-xl font-bold text-teal-700 mb-2">Materiales Complementarios</h2>
                     <p class="text-slate-600 text-sm md:text-base">Aquí puedes encontrar presentaciones, videos, podcasts y otros recursos útiles para cada unidad. El objetivo es complementar lo visto en clase y ofrecerte diferentes formatos de aprendizaje para que refuerces tus conocimientos. En la vista móvil, toca el botón "Abrir en pantalla completa" para una mejor visualización.</p>
+                    <p class="text-slate-600 text-xs md:text-sm mt-2 italic"><strong>Nota:</strong> Estos recursos se actualizarán constantemente para complementar el curso.</p>
                 </div>
                 <div class="space-y-8">
+                    <!-- Sección de Actividades y Recursos Interactivos -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-teal-800">Actividades y Recursos Interactivos</h3>
+                        <div class="space-y-6">
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Mapa Interactivo del Programa</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://abarrios-crypto.github.io/MapaPatoClinII/" allowfullscreen></iframe>
+                                </div>
+                                <div class="md:hidden mt-2">
+                                    <button onclick="openFullscreen('https://abarrios-crypto.github.io/MapaPatoClinII/')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                                        Abrir en pantalla completa
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
+                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Actividad de Encuadre</h4>
+                                <div class="iframe-container">
+                                    <iframe src="https://app.briskteaching.com/ws/BU9UBI" allowfullscreen></iframe>
+                                </div>
+                                <div class="md:hidden mt-2">
+                                    <button onclick="openFullscreen('https://app.briskteaching.com/ws/BU9UBI')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
+                                        Abrir en pantalla completa
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Sección de Presentaciones -->
                     <div class="bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="font-bold text-lg mb-4 text-teal-800">Presentaciones (Gamma.app)</h3>
@@ -218,164 +371,86 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Sección de Actividades y Recursos Interactivos -->
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="font-bold text-lg mb-4 text-teal-800">Actividades y Recursos Interactivos</h3>
-                        <div class="space-y-6">
-                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
-                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Mapa Interactivo del Programa</h4>
-                                <div class="iframe-container">
-                                    <iframe src="https://abarrios-crypto.github.io/MapaPatoClinII/" allowfullscreen></iframe>
-                                </div>
-                                <div class="md:hidden mt-2">
-                                    <button onclick="openFullscreen('https://abarrios-crypto.github.io/MapaPatoClinII/')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
-                                        Abrir en pantalla completa
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
-                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Actividad de Encuadre</h4>
-                                <div class="iframe-container">
-                                    <iframe src="https://app.briskteaching.com/ws/BU9UBI" allowfullscreen></iframe>
-                                </div>
-                                <div class="md:hidden mt-2">
-                                    <button onclick="openFullscreen('https://app.briskteaching.com/ws/BU9UBI')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
-                                        Abrir en pantalla completa
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
-                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Actividad Unidad 1 Tema 1</h4>
-                                <div class="iframe-container">
-                                    <iframe src="https://app.briskteaching.com/ws/95H4KB" allowfullscreen></iframe>
-                                </div>
-                                <div class="md:hidden mt-2">
-                                    <button onclick="openFullscreen('https://app.briskteaching.com/ws/95H4KB')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
-                                        Abrir en pantalla completa
-                                    </button>
-                                </div>
-                            </div>
-                             <div class="relative overflow-hidden rounded-lg shadow-md p-4 bg-slate-50">
-                                <h4 class="font-medium text-sm md:text-base text-slate-800 mb-2">Actividad Unidad 1 Tema 4</h4>
-                                <div class="iframe-container">
-                                    <iframe src="https://app.briskteaching.com/ws/39GX8G" allowfullscreen></iframe>
-                                </div>
-                                <div class="md:hidden mt-2">
-                                    <button onclick="openFullscreen('https://app.briskteaching.com/ws/39GX8G')" class="w-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2">
-                                        Abrir en pantalla completa
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </main>
     </div>
 
 <script>
-    // Función para abrir la URL de un iframe en una nueva pestaña.
-    // Esto es ideal para dispositivos móviles, ya que simula una vista en "pantalla completa".
+    // Función para abrir enlaces en pantalla completa en una nueva ventana
     function openFullscreen(url) {
         window.open(url, '_blank');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-
+        // Datos de las unidades de aprendizaje
         const unitsData = [
             {
-                title: "1. Introducción a la Patología Clínica II",
+                title: "Unidad 1. Introducción a la Patología Clínica II",
                 content: {
-                    "Tema(s) y subtema(s)": "- Alcance de la patología clínica en la biomedicina.<br>- Aplicaciones de la etiología en la investigación.<br>- Patogénesis: fundamentos lesionales y fisiopatológicos.<br>- Conceptos de síntoma, signo, síndrome.<br>- Medicina basada en la evidencia.",
+                    "Temas y subtemas": "- Alcance de la patología clínica en la biomedicina; Aplicaciones prácticas de la etiología y factores de riesgo en la investigación biomédica; Patogénesis: fundamentos lesionales y fisiopatológicos; Conceptos de síntoma, signo, síndrome y otros; Medicina basada en la evidencia.",
                     "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos, actividades reflexivas, actividades mediadas por TICs e innovadoras.",
-                    "Actividades para el aprendizaje (estudiante)": "Participación en actividades mediadas por el docente, exposición, debate y desarrollo de actividades de estudio independiente.",
-                    "Materiales y Recursos": "Pizarrón blanco, plumones, proyector, PC o laptop, conexión a internet, material impreso de lectura, presentaciones digitales y actividades interactivas.",
-                    "Evidencias de aprendizaje": "Productos de desempeño, Portafolio de evidencias y registro de actividades.",
-                    "Trabajo(s) de estudio independiente": "Lectura y análisis de textos científicos.",
-                    "Evaluación": "Se basa en las <strong>Actividades en clase (30%)</strong> y <strong>Prácticas de laboratorio (20%)</strong> para la calificación parcial."
+                    "Actividades para el aprendizaje (estudiante)": "Participación en las actividades mediadas por el docente, exposición, debate, desarrollo de actividades de estudio independiente, elaboración de organizadores gráficos y materiales creativos.",
+                    "Evaluación": "La calificación parcial se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "2. Estudio Básico de la Sangre",
+                title: "Unidad 2. Estudio Básico de la Sangre",
                 content: {
-                    "Tema(s) y subtema(s)": "- Composición de la sangre.<br>- Hematopoyesis y funciones de los diferentes tipos celulares.<br>- Alteraciones hematológicas comunes.<br>- Interpretación de un hemograma.<br>- Pruebas específicas en hematología.",
+                    "Temas y subtemas": "- Composición de la sangre; Hematopoyesis y funciones de los diferentes tipos celulares; Alteraciones hematológicas más comunes; Interpretación de los resultados de un hemograma; Pruebas específicas en hematología.",
                     "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
-                    "Actividades para el aprendizaje (estudiante)": "Participación en clase, desarrollo de actividades de estudio independiente y elaboración de organizadores gráficos.",
-                    "Materiales y Recursos": "Prácticas de laboratorio, material didáctico impreso y actividades interactivas.",
-                    "Evidencias de aprendizaje": "Portafolio de evidencias y evidencia de participación en plataformas y aplicaciones.",
-                    "Trabajo(s) de estudio independiente": "Elaboración de mapas conceptuales y diagramas de flujo.",
-                    "Evaluación": "La calificación parcial se divide en <strong>Actividades (30%)</strong> y <strong>Prácticas de laboratorio (20%)</strong>."
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, elaboración de fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación parcial se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "3. Banco de Sangre y Medicina Transfusional",
+                title: "Unidad 3. Banco de Sangre y Medicina Transfusional",
                 content: {
-                    "Tema(s) y subtema(s)": "- Principios de la donación de sangre.<br>- Tipos de transfusiones y sus indicaciones.<br>- Reacciones transfusionales.<br>- Conservación y manejo de hemoderivados.<br>- Tendencias en investigación en Medicina Transfusional.",
-                    "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos y juego de roles.",
-                    "Actividades para el aprendizaje (estudiante)": "Participación, exposición y elaboración de materiales creativos.",
-                    "Materiales y Recursos": "Pizarrón, proyector, PC/laptop y material impreso.",
-                    "Evidencias de aprendizaje": "Portafolio de evidencias y productos de desempeño.",
-                    "Trabajo(s) de estudio independiente": "Investigación sobre tendencias en medicina transfusional.",
-                    "Evaluación": "La calificación final se basa en una <strong>Actividad integradora teórico-práctica (50%)</strong>, <strong>Examen práctico (25%)</strong> y <strong>Proyecto final (25%)</strong>."
+                    "Temas y subtemas": "- Principios de la donación de sangre; Tipos de transfusiones y sus indicaciones; Reacciones transfusionales; Conservación y manejo de hemoderivados; Tendencias en investigación en la Medicina Transfusional.",
+                    "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, desarrollo de resúmenes, fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación parcial se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "4. Valoración Metabólica Básica",
+                title: "Unidad 4. Valoración Metabólica Básica",
                 content: {
-                    "Tema(s) y subtema(s)": "- Metabolismo de carbohidratos, lípidos y proteínas.<br>- Marcadores bioquímicos.<br>- Interpretación de perfiles metabólicos.",
-                    "Actividades para la enseñanza (docente)": "Clases magistrales y análisis de casos clínicos.",
-                    "Actividades para el aprendizaje (estudiante)": "Exposición y debate.",
-                    "Materiales y Recursos": "Pizarrón, proyector, PC/laptop y material impreso de lectura.",
-                    "Evidencias de aprendizaje": "Productos de desempeño y registro de actividades.",
-                    "Trabajo(s) de estudio independiente": "Interpretación de casos clínicos y perfiles metabólicos.",
-                    "Evaluación": "Se evaluará la <strong>aplicación de los contenidos</strong> y el **cuidado de la ortografía**."
+                    "Temas y subtemas": "- Puntos claves del metabolismo de carbohidratos, lípidos y proteínas; Marcadores bioquímicos; Interpretación de perfiles metabólicos.",
+                    "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, desarrollo de resúmenes, fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación parcial se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "5. Valoración Renal Básica",
+                title: "Unidad 5. Valoración Renal Básica",
                 content: {
-                    "Tema(s) y subtema(s)": "- Fisiología renal básica.<br>- Alteraciones renales y marcadores de función renal.<br>- Enfermedades renales más frecuentes.",
-                    "Actividades para la enseñanza (docente)": "Clases magistrales y actividades innovadoras.",
-                    "Actividades para el aprendizaje (estudiante)": "Participación en clase.",
-                    "Materiales y Recursos": "Pizarrón, proyector, PC/laptop, conexión a internet y material impreso.",
-                    "Evidencias de aprendizaje": "Portafolio de evidencias y evidencia de participación en plataformas.",
-                    "Trabajo(s) de estudio independiente": "Investigación sobre enfermedades renales.",
-                    "Evaluación": "La calificación final incluye una <strong>Actividad integradora teórico-práctica (50%)</strong>, <strong>Examen práctico (25%)</strong> y un <strong>Proyecto final (25%)</strong>."
+                    "Temas y subtemas": "- Fisiología renal básica; Alteraciones renales y marcadores de función renal; Enfermedades renales más frecuentes.",
+                    "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, desarrollo de resúmenes, fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación final se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "6. Valoración Hepática Básica",
+                title: "Unidad 6. Valoración Hepática Básica",
                 content: {
-                    "Tema(s) y subtema(s)": "- Fisiología hepática básica.<br>- Pruebas hepáticas y su interpretación.<br>- Hepatopatías más comunes.",
-                    "Actividades para la enseñanza (docente)": "Clases magistrales y análisis de casos clínicos.",
-                    "Actividades para el aprendizaje (estudiante)": "Exposición y desarrollo de actividades de estudio independiente.",
-                    "Materiales y Recursos": "Material impreso de lectura y presentaciones digitales.",
-                    "Evidencias de aprendizaje": "Registro de actividades en clase y de estudio independiente.",
-                    "Trabajo(s) de estudio independiente": "Creación de productos de desempeño de manera coherente y clara.",
-                    "Evaluación": "Se evaluará la <strong>capacidad de observar, investigar, argumentar y redactar</strong>."
+                    "Temas y subtemas": "- Fisiología hepática básica; Pruebas hepáticas y su interpretación; Hepatopatías más comunes.",
+                    "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, desarrollo de resúmenes, fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación final se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             },
             {
-                title: "7. Evaluación del Equilibrio Ácido-Base",
+                title: "Unidad 7. Evaluación del Equilibrio Ácido-Base",
                 content: {
-                    "Tema(s) y subtema(s)": "- Fisiología ácido-base.<br>- Acidosis y alcalosis.<br>- Interpretación de gases arteriales.",
-                    "Actividades para la enseñanza (docente)": "Clases magistrales, análisis de casos clínicos y actividades mediadas por TICs.",
-                    "Actividades para el aprendizaje (estudiante)": "Debate y elaboración de materiales creativos.",
-                    "Materiales y Recursos": "Pizarrón, proyector, PC/laptop, conexión a internet y actividades interactivas.",
-                    "Evidencias de aprendizaje": "Evidencia de participación en aplicaciones y productos de desempeño.",
-                    "Trabajo(s) de estudio independiente": "Investigación y análisis de casos de acidosis y alcalosis.",
-                    "Evaluación": "La calificación final se basa en las <strong>Evaluaciones parciales (30%)</strong> y las **Actividades de estudio independiente (20%)**."
+                    "Temas y subtemas": "- Fisiología ácido-base; Acidosis y alcalosis; Interpretación de gases arteriales.",
+                    "Actividades para la enseñanza (docente)": "Clases magistrales, prácticas de laboratorio y análisis de casos clínicos.",
+                    "Actividades para el aprendizaje (estudiante)": "Participación activa en clase, desarrollo de resúmenes, fichas de trabajo y mapas conceptuales, desarrollo de actividades de estudio independiente.",
+                    "Evaluación": "La calificación final se basa en las <strong>Actividades en clase y de estudio independiente (30%)</strong>, <strong>Prácticas de laboratorio (20%)</strong>, <strong>Examen práctico (30%)</strong>, y el <strong>Proyecto final (20%)</strong>."
                 }
             }
         ];
 
-        const schedulesData = [
-            { group: "5-1", times: "<strong>Lun:</strong> 08:00-9:20 | <strong>Mar:</strong> 08:00-09:20 | <strong>Jue:</strong> 09:20-10:00 | <strong>Vie:</strong> 08:00-9:20" },
-            { group: "5-2", times: "<strong>Lun:</strong> 10:40-12:00 | <strong>Mar:</strong> 10:40-12:00 | <strong>Mié:</strong> 08:00-9:20 | <strong>Jue:</strong> 10:00-10:40" },
-            { group: "5-3", times: "<strong>Lun:</strong> 14:20-15:40 | <strong>Mar:</strong> 15:40-16:20 | <strong>Mié:</strong> 14:20-15:40 | <strong>Jue:</strong> 14:20-15:40" },
-        ];
-
+        // Rellena el contenedor de unidades con la información de los datos
         const unitsContainer = document.getElementById('units-container');
         unitsData.forEach(unit => {
             const unitElement = document.createElement('div');
@@ -404,17 +479,26 @@
             unitsContainer.appendChild(unitElement);
         });
 
+        // Datos para los horarios de los grupos
         const schedulesContainer = document.getElementById('schedules-container');
+        const schedulesData = [
+            { group: "5-1", times: "<strong>Lun:</strong> 08:00-08:40 | <strong>Mar:</strong> 08:00-09:40 | <strong>Mié:</strong> --- | <strong>Jue:</strong> 09:40-10:30 | <strong>Vie:</strong> 08:00-09:40" },
+            { group: "5-2", times: "<strong>Lun:</strong> 10:40-11:20 | <strong>Mar:</strong> 10:40-12:00 | <strong>Mié:</strong> 08:00-08:40 | <strong>Jue:</strong> 10:00-10:40 | <strong>Vie:</strong> ---" },
+            { group: "5-3", times: "<strong>Lun:</strong> 14:20-15:40 | <strong>Mar:</strong> 15:40-16:20 | <strong>Mié:</strong> 14:20-15:40 | <strong>Jue:</strong> 14:20-15:40 | <strong>Vie:</strong> ---" }
+        ];
+
+        // Rellena el contenedor de horarios con la información de los datos
         schedulesData.forEach(schedule => {
             const scheduleElement = document.createElement('div');
             scheduleElement.className = 'bg-slate-100 p-3 rounded-md';
             scheduleElement.innerHTML = `
-                <p class="font-semibold text-sm md:text-base text-slate-800">Grupo ${schedule.group}</p>
+                <p class="font-semibold text-sm md:text-base text-slate-900">Grupo ${schedule.group}</p>
                 <p class="text-xs md:text-sm text-slate-600">${schedule.times}</p>
             `;
             schedulesContainer.appendChild(scheduleElement);
         });
 
+        // Lógica para expandir/colapsar las unidades
         unitsContainer.addEventListener('click', (event) => {
             const header = event.target.closest('.unit-header');
             if (header) {
@@ -428,6 +512,7 @@
             }
         });
 
+        // Lógica para cambiar entre pestañas
         const navButtons = document.querySelectorAll('.nav-button');
         const contentSections = document.querySelectorAll('.content-section');
 
@@ -448,20 +533,28 @@
             });
         });
 
+        // Inicializa el gráfico de Chart.js
         const ctx = document.getElementById('hoursChart').getContext('2d');
         const hoursChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Teóricas', 'Prácticas', 'Estudio Independiente'],
+                labels: [
+                    'Actividades en clase y estudio independiente',
+                    'Prácticas de laboratorio',
+                    'Examen práctico',
+                    'Proyecto final'
+                ],
                 datasets: [{
-                    label: 'Distribución de Horas',
-                    data: [96, 32, 32],
+                    label: 'Criterios de Evaluación',
+                    data: [30, 20, 30, 20],
                     backgroundColor: [
-                        'rgba(15, 118, 110, 0.8)', // teal-700
                         'rgba(13, 148, 136, 0.8)', // teal-600
-                        'rgba(45, 212, 191, 0.8)'  // teal-400
+                        'rgba(45, 212, 191, 0.8)', // teal-400
+                        'rgba(244, 255, 245, 0.8)', // lime-50
+                        'rgba(17, 94, 89, 0.8)' // teal-800
                     ],
                     borderColor: [
+                        '#f8fafc',
                         '#f8fafc',
                         '#f8fafc',
                         '#f8fafc'
@@ -489,7 +582,7 @@
                                     label += ': ';
                                 }
                                 if (context.parsed !== null) {
-                                    label += context.parsed + ' horas';
+                                    label += context.parsed + '%';
                                 }
                                 return label;
                             }
@@ -498,6 +591,100 @@
                 }
             }
         });
+
+        // Lógica para generar el calendario dinámico
+        const calendarContainer = document.getElementById('calendar-container');
+
+        // Función auxiliar para obtener los días entre dos fechas
+        function getDaysInRange(start, end) {
+            const date = new Date(start.getTime());
+            const dates = [];
+            while (date <= end) {
+                dates.push(new Date(date));
+                date.setDate(date.getDate() + 1);
+            }
+            return dates;
+        }
+
+        // Datos extraídos del calendario oficial de la UAS para 2025-2026
+        const specialDates = [
+            { date: '2025-08-25', type: 'start', label: 'Inicio de clases' },
+            { date: '2026-01-16', type: 'end', label: 'Fin de clases' },
+            { date: '2025-12-22', type: 'vacation', label: 'Inicio de vacaciones de invierno' },
+            { date: '2026-01-09', type: 'vacation', label: 'Fin de vacaciones de invierno' },
+        ];
+
+        // Añadir el rango de exámenes
+        const examDates = getDaysInRange(new Date('2026-01-05'), new Date('2026-01-16'));
+        examDates.forEach(date => {
+            const isoDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+            specialDates.push({ date: isoDate, type: 'exam', label: 'Examen' });
+        });
+
+        // Función para generar un mes de calendario
+        function generateMonth(year, monthIndex) {
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            
+            const firstDay = new Date(year, monthIndex, 1);
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            const firstDayOfWeek = firstDay.getDay();
+
+            let monthHTML = `
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 class="font-bold text-center text-slate-800 mb-2">${monthNames[monthIndex]} ${year}</h4>
+                    <div class="calendar-grid text-xs md:text-sm mb-2">
+                        ${dayNames.map(day => `<div class="day-name text-center">${day}</div>`).join('')}
+                    </div>
+                    <div class="calendar-grid text-sm md:text-base">
+            `;
+
+            // Celdas vacías para los días antes del primer día del mes
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                monthHTML += `<div class="calendar-day"></div>`;
+            }
+
+            // Celdas para cada día del mes
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, monthIndex, day);
+                const isoDate = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                
+                const specialDate = specialDates.find(d => d.date === isoDate);
+                
+                let classes = 'calendar-day';
+                let tooltip = '';
+                
+                if (specialDate) {
+                    classes += ` highlight-${specialDate.type}`;
+                    tooltip = specialDate.label;
+                }
+
+                monthHTML += `
+                    <div class="${classes}" title="${tooltip}">
+                        ${day}
+                    </div>
+                `;
+            }
+
+            monthHTML += `
+                    </div>
+                </div>
+            `;
+            return monthHTML;
+        }
+
+        // Generar los calendarios para el ciclo escolar 2025-2026
+        // Se extiende de agosto de 2025 a julio de 2026
+        for (let year = 2025; year <= 2026; year++) {
+            let startMonth = (year === 2025) ? 7 : 0; // Agosto 2025
+            let endMonth = (year === 2026) ? 6 : 11; // Julio 2026
+            
+            for (let month = startMonth; month <= endMonth; month++) {
+                const monthDiv = document.createElement('div');
+                monthDiv.innerHTML = generateMonth(year, month);
+                calendarContainer.appendChild(monthDiv.firstChild);
+            }
+        }
     });
 </script>
 </body>
